@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        padding: 20px;
+    }
+    .quiz-container {
+        background: white;
+        max-width: 500px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+    h2 { margin-bottom: 20px; }
+    button {
+        background: #007bff;
+        color: white;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+    .options { margin-bottom: 15px; }
+</style>
+</head>
+<body>
+
+<div class="quiz-container">
+    <h2 id="question">Question text</h2>
+    <div id="options" class="options"></div>
+    <button id="nextBtn">Next</button>
+</div>
+
+<script>
+const quizData = [
+    {
+        type: "single",
+        question: "Which language runs in a web browser?",
+        options: ["Java", "C", "Python", "JavaScript"],
+        correct: [3] // index of correct option
+    },
+    {
+        type: "multi",
+        question: "Which of these are programming languages?",
+        options: ["HTML", "CSS", "JavaScript", "Python"],
+        correct: [2, 3] // multiple answers
+    },
+    {
+        type: "fill",
+        question: "Fill in the blank: The capital of France is _____.",
+        answer: "paris"
+    }
+];
+
+let currentQuestion = 0;
+let score = 0;
+
+function loadQuestion() {
+    const q = quizData[currentQuestion];
+    document.getElementById("question").textContent = q.question;
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    if (q.type === "single") {
+        q.options.forEach((opt, i) => {
+            optionsDiv.innerHTML += `<label><input type="radio" name="answer" value="${i}"> ${opt}</label><br>`;
+        });
+    }
+    else if (q.type === "multi") {
+        q.options.forEach((opt, i) => {
+            optionsDiv.innerHTML += `<label><input type="checkbox" value="${i}"> ${opt}</label><br>`;
+        });
+    }
+    else if (q.type === "fill") {
+        optionsDiv.innerHTML = `<input type="text" id="fillAnswer" placeholder="Type your answer">`;
+    }
+}
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+    const q = quizData[currentQuestion];
+    let isCorrect = false;
+
+    if (q.type === "single") {
+        const selected = document.querySelector("input[name='answer']:checked");
+        if (selected && parseInt(selected.value) === q.correct[0]) {
+            isCorrect = true;
+        }
+    }
+    else if (q.type === "multi") {
+        const selected = Array.from(document.querySelectorAll("input[type='checkbox']:checked"))
+                              .map(cb => parseInt(cb.value));
+        if (JSON.stringify(selected.sort()) === JSON.stringify(q.correct.sort())) {
+            isCorrect = true;
+        }
+    }
+    else if (q.type === "fill") {
+        const answer = document.getElementById("fillAnswer").value.trim().toLowerCase();
+        if (answer === q.answer.toLowerCase()) {
+            isCorrect = true;
+        }
+    }
+
+    if (isCorrect) score++;
+
+    currentQuestion++;
+    if (currentQuestion < quizData.length) {
+        loadQuestion();
+    } else {
+        document.querySelector(".quiz-container").innerHTML = `
+            <h2>Your Score: ${score} / ${quizData.length}</h2>
+            <button onclick="location.reload()">Play Again</button>
+        `;
+    }
+});
+
+loadQuestion();
+</script>
+
+</body>
+</html>
